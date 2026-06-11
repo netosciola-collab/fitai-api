@@ -12,10 +12,22 @@ router.post("/", authMiddleware, async (req: AuthRequest, res) => {
     const data = CheckInSchema.parse(req.body);
 
     // Criar check-in
+    const { stressLevel, sleepQuality, energyLevel, muscleSoreness, motivation, availableTime } = data;
+    const checkInResult = await processCheckIn(data, {} as any);
+    const score = checkInResult.score || 0;
+    const aiDecision = checkInResult.decision || "TREINO_NORMAL";
+
     const checkIn = await prisma.checkIn.create({
       data: {
         userId: req.userId!,
-        ...data,
+        stressLevel,
+        sleepQuality,
+        energyLevel,
+        muscleSoreness,
+        motivation,
+        availableTime,
+        score,
+        aiDecision,
       },
     });
 
@@ -23,7 +35,7 @@ router.post("/", authMiddleware, async (req: AuthRequest, res) => {
     const today = new Date();
     const dayOfWeek = today.getDay();
 
-    const plan = await prisma.workout.findFirst({
+    const plan = await prisma.workoutPlan.findFirst({
       where: {
         userId: req.userId!,
         isActive: true,
@@ -36,7 +48,7 @@ router.post("/", authMiddleware, async (req: AuthRequest, res) => {
 
     const workoutDay = await prisma.workoutDay.findFirst({
       where: {
-        workoutId: plan.id,
+        planId: plan.id,
         weekDay: dayOfWeek,
       },
       include: {

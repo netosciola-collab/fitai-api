@@ -39,6 +39,8 @@ router.post("/register", async (req: Request, res: Response) => {
         sessionDuration: 60,
         gymType: "home",
         equipment: [],
+        stressLevel: 5,
+        sleepQuality: 5,
       },
     });
 

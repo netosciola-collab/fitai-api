@@ -19,7 +19,7 @@ router.post("/generate", authMiddleware, async (req: AuthRequest, res) => {
     const generatedPlan = await generateWorkoutPlan(user);
 
     // Criar plano no banco
-    const plan = await prisma.workout.create({
+    const plan = await prisma.workoutPlan.create({
       data: {
         userId: req.userId!,
         name: generatedPlan.planName,
@@ -35,7 +35,7 @@ router.post("/generate", authMiddleware, async (req: AuthRequest, res) => {
     for (const day of generatedPlan.days) {
       const workoutDay = await prisma.workoutDay.create({
         data: {
-          workoutId: plan.id,
+          planId: plan.id,
           dayLabel: day.dayLabel,
           weekDay: day.weekDay,
           muscleGroups: day.muscleGroups,
@@ -54,11 +54,6 @@ router.post("/generate", authMiddleware, async (req: AuthRequest, res) => {
           exerciseRecord = await prisma.exercise.create({
             data: {
               name: exercise.name,
-              category: "compound",
-              difficulty: "intermediate",
-              instructions: "",
-              musclesPrimary: [],
-              musclesSecondary: [],
             },
           });
         }
@@ -90,7 +85,7 @@ router.post("/generate", authMiddleware, async (req: AuthRequest, res) => {
 // GET /api/v1/plans/active — retornar plano ativo do usuário
 router.get("/active", authMiddleware, async (req: AuthRequest, res) => {
   try {
-    const plan = await prisma.workout.findFirst({
+    const plan = await prisma.workoutPlan.findFirst({
       where: {
         userId: req.userId!,
         isActive: true,
@@ -121,7 +116,7 @@ router.get("/active", authMiddleware, async (req: AuthRequest, res) => {
 // GET /api/v1/plans/:id — retornar plano específico
 router.get("/:id", authMiddleware, async (req: AuthRequest, res) => {
   try {
-    const plan = await prisma.workout.findUnique({
+    const plan = await prisma.workoutPlan.findUnique({
       where: { id: req.params.id },
       include: {
         workoutDays: {

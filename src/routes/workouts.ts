@@ -111,7 +111,7 @@ router.get("/sessions/:id", authMiddleware, async (req: AuthRequest, res) => {
         exerciseLogs: {
           include: {
             exercise: true,
-            setLogs: true,
+            sets: true,
           },
         },
       },
