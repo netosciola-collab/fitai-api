@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: fitai-api
+    env: docker
+    plan: free
+    envVars:
+      - key: DATABASE_URL
+        value: postgresql://postgres.wlxtztazwanhxujomfpo:netosciolabonito@aws-1-sa-east-1.pooler.supabase.com:6543/postgres
+      - key: OPENAI_API_KEY
+        value: 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
+      - key: SUPABASE_URL
+        value: https://wlxtztazwanhxujomfpo.supabase.co
+      - key: SUPABASE_ANON_KEY
+        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndseHR6dGF6d2FuaHh1am9tZnBvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwNzMxMzgsImV4cCI6MjA5NjY0OTEzOH0.wEa6nXjpvVirEBmSDQ7Pnmg0AiXZp_5E5CCUc5et-D8
+      - key: STRIPE_SECRET_KEY
+        value: sk_test_51TglrzBsVi9rFYzMvVhvr1hPm2F1nLq91BV9ONV7w0QXcfQA9RdXQdYjL5TQA1TxN8ekzD6A47qb1wN8lgQiAcJA00x3MIgY93
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
