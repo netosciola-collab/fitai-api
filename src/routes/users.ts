@@ -13,8 +13,27 @@ router.post("/", authMiddleware, async (req: AuthRequest, res) => {
     const user = await prisma.user.create({
       data: {
         id: req.userId!,
-        ...data,
+        email: data.email,
+        name: data.name,
+        sex: data.sex,
         birthDate: new Date(data.birthDate),
+        weight: data.weight,
+        height: data.height,
+        bodyFatPercent: data.bodyFatPercent,
+        goal: data.goal,
+        experienceLevel: data.experienceLevel,
+        availableDays: data.availableDays,
+        sessionDuration: data.sessionDuration,
+        gymType: data.gymType,
+        equipment: data.equipment || [],
+        injuryHistory: data.injuryHistory,
+        physicalLimits: data.physicalLimits,
+        preferredCardio: data.preferredCardio,
+        stressLevel: data.stressLevel,
+        sleepQuality: data.sleepQuality,
+        profession: data.profession,
+        dailySteps: data.dailySteps,
+        medications: data.medications,
       },
     });
 

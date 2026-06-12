@@ -13,7 +13,7 @@ router.post("/", authMiddleware, async (req: AuthRequest, res) => {
 
     // Criar check-in
     const { stressLevel, sleepQuality, energyLevel, muscleSoreness, motivation, availableTime } = data;
-    const checkInResult = await processCheckIn(data, {} as any);
+    const checkInResult = await processCheckIn(data as any, {} as any);
     const score = checkInResult.score || 0;
     const aiDecision = checkInResult.decision || "TREINO_NORMAL";
 
@@ -68,7 +68,7 @@ router.post("/", authMiddleware, async (req: AuthRequest, res) => {
     }
 
     // Processar check-in e adaptar treino
-    const adaptedWorkout = await processCheckIn(data, workoutDay as any);
+    const adaptedWorkout = await processCheckIn(data as any, workoutDay as any);
 
     res.json({
       checkIn,
