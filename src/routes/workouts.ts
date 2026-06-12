@@ -155,12 +155,18 @@ router.post("/sessions/:sessionId/exercises/:exerciseId/sets", authMiddleware, a
     }
 
     // Criar SetLog
-    const setLog = await prisma.setLog.create({
-      data: {
-        exerciseLogId: exerciseLog.id,
-        ...data,
-      },
-    });
+   const setLog = await prisma.setLog.create({
+  data: {
+    setNumber: data.setNumber || 1,
+    reps: data.reps || 0,
+    weight: data.weight || 0,
+    rpe: data.rpe || null,
+    isPR: data.isPR || false,
+    exerciseLog: {
+      connect: { id: exerciseLog.id }
+    }
+  },
+});
 
     res.status(201).json(setLog);
   } catch (error: any) {
