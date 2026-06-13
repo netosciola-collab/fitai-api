@@ -15,7 +15,7 @@ Crie um plano de treino completo para este usuário:
 - Dias disponíveis: ${user.availableDays}
 - Duração por sessão: ${user.sessionDuration} minutos
 - Local: ${user.gymType}
-- Equipamentos: ${user.equipment?.join(", ") || "Nenhum"}
+- Equipamentos: ${Array.isArray(user.equipment) ? user.equipment.join(", ") : typeof user.equipment === 'string' ? user.equipment : "Nenhum"}
 - Lesões/limitações: ${user.injuryHistory || "Nenhuma"} / ${user.physicalLimits || "Nenhuma"}
 
 Regras obrigatórias:

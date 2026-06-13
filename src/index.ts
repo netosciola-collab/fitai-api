@@ -21,11 +21,13 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(helmet());
 app.use(cors({
-  origin: [
-    "https://web-tau-steel-69.vercel.app",
-    "http://localhost:3000",
-    "http://localhost:5173"
-  ],
+  origin: (origin, callback) => {
+    if (!origin || origin.includes('vercel.app') || origin.includes('localhost')) {
+      callback(null, true)
+    } else {
+      callback(new Error('Not allowed by CORS'))
+    }
+  },
   credentials: true
 }));
 app.use(express.json());
