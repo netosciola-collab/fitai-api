@@ -24,11 +24,12 @@ router.post("/register", async (req: Request, res: Response) => {
       return res.status(409).json({ error: "User already exists" });
     }
 
-    // Criar usuário (sem password para MVP)
+    // Criar usuário (sem password para MVP - usar email como password temporário)
     const user = await prisma.user.create({
       data: {
         email,
         name,
+        password: email, // Usar email como password temporário
         sex: "not-specified",
         birthDate: new Date(),
         weight: 0,
