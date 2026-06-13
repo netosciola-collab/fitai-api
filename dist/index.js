@@ -21,7 +21,14 @@ const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3000;
 // Middleware
 app.use((0, helmet_1.default)());
-app.use((0, cors_1.default)());
+app.use((0, cors_1.default)({
+    origin: [
+        "https://web-tau-steel-69.vercel.app",
+        "http://localhost:3000",
+        "http://localhost:5173"
+    ],
+    credentials: true
+}));
 app.use(express_1.default.json());
 // Request logging middleware
 app.use((req, res, next) => {
