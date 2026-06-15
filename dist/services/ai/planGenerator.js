@@ -29,7 +29,7 @@ Regras obrigatórias:
 - Nunca incluir exercício contraindicado para as lesões declaradas
 - Priorizar compostos, depois auxiliares, depois isolados
 
-Retorne APENAS um JSON válido neste formato:
+Retorne APENAS um JSON válido neste formato (sem markdown, sem \`\`\`):
 {
   "planName": "PPL — Push/Pull/Legs",
   "split": "PPL",
@@ -56,23 +56,16 @@ Retorne APENAS um JSON válido neste formato:
     }
   ]
 }`;
-    const response = await openai_1.default.chat.completions.create({
-        model: "gpt-4o",
-        messages: [
-            {
-                role: "user",
-                content: prompt,
-            },
-        ],
-        temperature: 0.7,
-    });
-    const content = response.choices[0]?.message?.content;
+    const model = openai_1.default.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const result = await model.generateContent(prompt);
+    const content = result.response.text();
     if (!content) {
-        throw new Error("No response from OpenAI");
+        throw new Error("No response from Gemini");
     }
-    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    const cleanJson = content.replace(/```json\n?|\n?```/g, "").trim();
+    const jsonMatch = cleanJson.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
-        throw new Error("Invalid JSON response from OpenAI");
+        throw new Error("Invalid JSON response from Gemini");
     }
     const plan = JSON.parse(jsonMatch[0]);
     return plan;

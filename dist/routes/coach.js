@@ -4,11 +4,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const openai_1 = __importDefault(require("openai"));
+const openai_1 = __importDefault(require("../lib/openai"));
 const prisma_1 = __importDefault(require("../lib/prisma"));
 const auth_1 = require("../middleware/auth");
 const router = (0, express_1.Router)();
-const openai = new openai_1.default({ apiKey: process.env.OPENAI_API_KEY });
 // POST /api/v1/coach/chat — chat com IA
 router.post('/chat', auth_1.authMiddleware, async (req, res) => {
     try {
@@ -23,26 +22,22 @@ router.post('/chat', auth_1.authMiddleware, async (req, res) => {
         // Construir histórico de mensagens
         const messages = [
             {
-                role: 'system',
+                role: 'user',
                 content: `Você é o FitAI Coach, personal trainer digital de ${user.name}.
 Perfil: objetivo=${user.goal}, nível=${user.experienceLevel}, dias=${user.availableDays}x/semana.
 Tom: direto, motivador, técnico quando necessário. Respostas curtas (máx 3 parágrafos).
-Nunca recomendar medicamentos ou dosagens de suplementos.`,
+Nunca recomendar medicamentos ou dosagens de suplementos.
+
+Histórico da conversa:
+${history && Array.isArray(history) ? history.map((m) => `${m.role}: ${m.content}`).join('\n') : ''}
+
+Mensagem do usuário: ${message}`,
             },
         ];
-        // Adicionar histórico se existir
-        if (history && Array.isArray(history)) {
-            messages.push(...history);
-        }
-        // Adicionar mensagem atual
-        messages.push({ role: 'user', content: message });
-        // Chamar OpenAI
-        const completion = await openai.chat.completions.create({
-            model: 'gpt-4o',
-            max_tokens: 500,
-            messages,
-        });
-        const reply = completion.choices[0].message.content || '';
+        // Chamar Gemini
+        const model = openai_1.default.getGenerativeModel({ model: 'gemini-1.5-flash' });
+        const result = await model.generateContent(messages[0].content);
+        const reply = result.response.text();
         res.json({ reply });
     }
     catch (error) {

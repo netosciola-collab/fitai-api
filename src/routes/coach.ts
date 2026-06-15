@@ -1,10 +1,9 @@
 import { Router, Request, Response } from 'express';
-import OpenAI from 'openai';
+import genAI from '../lib/openai';
 import prisma from '../lib/prisma';
 import { authMiddleware, AuthRequest } from '../middleware/auth';
 
 const router = Router();
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 // POST /api/v1/coach/chat — chat com IA
 router.post('/chat', authMiddleware, async (req: AuthRequest, res: Response) => {
@@ -23,30 +22,23 @@ router.post('/chat', authMiddleware, async (req: AuthRequest, res: Response) => 
     // Construir histórico de mensagens
     const messages: any[] = [
       {
-        role: 'system',
+        role: 'user',
         content: `Você é o FitAI Coach, personal trainer digital de ${user.name}.
 Perfil: objetivo=${user.goal}, nível=${user.experienceLevel}, dias=${user.availableDays}x/semana.
 Tom: direto, motivador, técnico quando necessário. Respostas curtas (máx 3 parágrafos).
-Nunca recomendar medicamentos ou dosagens de suplementos.`,
+Nunca recomendar medicamentos ou dosagens de suplementos.
+
+Histórico da conversa:
+${history && Array.isArray(history) ? history.map((m: any) => `${m.role}: ${m.content}`).join('\n') : ''}
+
+Mensagem do usuário: ${message}`,
       },
     ];
 
-    // Adicionar histórico se existir
-    if (history && Array.isArray(history)) {
-      messages.push(...history);
-    }
-
-    // Adicionar mensagem atual
-    messages.push({ role: 'user', content: message });
-
-    // Chamar OpenAI
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o',
-      max_tokens: 500,
-      messages,
-    });
-
-    const reply = completion.choices[0].message.content || '';
+    // Chamar Gemini
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const result = await model.generateContent(messages[0].content);
+    const reply = result.response.text();
 
     res.json({ reply });
   } catch (error: any) {
