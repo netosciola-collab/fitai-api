@@ -10,7 +10,6 @@ router.get("/", async (req: Request, res: Response) => {
       select: {
         id: true,
         name: true,
-        description: true,
         muscleGroup: true,
         equipment: true,
         videoUrl: true,
@@ -64,7 +63,6 @@ router.get("/group/:muscleGroup", async (req: Request, res: Response) => {
       select: {
         id: true,
         name: true,
-        description: true,
         muscleGroup: true,
         equipment: true,
       },
