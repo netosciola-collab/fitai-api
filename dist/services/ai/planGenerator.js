@@ -4,8 +4,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.generateWorkoutPlan = generateWorkoutPlan;
-const openai_1 = __importDefault(require("../../lib/openai"));
+const axios_1 = __importDefault(require("axios"));
 async function generateWorkoutPlan(user) {
+    const apiKey = process.env.GEMINI_API_KEY;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
     const prompt = `Você é um personal trainer especialista em prescrição de treino baseada em ciência.
 
 Crie um plano de treino completo para este usuário:
@@ -56,17 +58,17 @@ Retorne APENAS um JSON válido neste formato (sem markdown, sem \`\`\`):
     }
   ]
 }`;
-    const model = openai_1.default.getGenerativeModel({ model: "gemini-1.5-flash" });
-    const result = await model.generateContent(prompt);
-    const content = result.response.text();
-    if (!content) {
-        throw new Error("No response from Gemini");
+    try {
+        const response = await axios_1.default.post(url, {
+            contents: [{ parts: [{ text: prompt }] }]
+        });
+        const text = response.data.candidates[0].content.parts[0].text;
+        const cleanJson = text.replace(/```json\n?|\n?```/g, '').trim();
+        const plan = JSON.parse(cleanJson);
+        return plan;
     }
-    const cleanJson = content.replace(/```json\n?|\n?```/g, "").trim();
-    const jsonMatch = cleanJson.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-        throw new Error("Invalid JSON response from Gemini");
+    catch (error) {
+        console.error('Gemini API error:', error.response?.data || error.message);
+        throw new Error(`Failed to generate workout plan: ${error.message}`);
     }
-    const plan = JSON.parse(jsonMatch[0]);
-    return plan;
 }

@@ -1,4 +1,4 @@
-import genAI from "../../lib/openai";
+import axios from 'axios';
 import { User } from "@prisma/client";
 
 interface GeneratedPlan {
@@ -25,6 +25,9 @@ interface GeneratedPlan {
 }
 
 export async function generateWorkoutPlan(user: User): Promise<GeneratedPlan> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+
   const prompt = `Você é um personal trainer especialista em prescrição de treino baseada em ciência.
 
 Crie um plano de treino completo para este usuário:
@@ -76,20 +79,17 @@ Retorne APENAS um JSON válido neste formato (sem markdown, sem \`\`\`):
   ]
 }`;
 
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-  const result = await model.generateContent(prompt);
-  const content = result.response.text();
+  try {
+    const response = await axios.post(url, {
+      contents: [{ parts: [{ text: prompt }] }]
+    });
 
-  if (!content) {
-    throw new Error("No response from Gemini");
+    const text = response.data.candidates[0].content.parts[0].text;
+    const cleanJson = text.replace(/```json\n?|\n?```/g, '').trim();
+    const plan = JSON.parse(cleanJson) as GeneratedPlan;
+    return plan;
+  } catch (error: any) {
+    console.error('Gemini API error:', error.response?.data || error.message);
+    throw new Error(`Failed to generate workout plan: ${error.message}`);
   }
-
-  const cleanJson = content.replace(/```json\n?|\n?```/g, "").trim();
-  const jsonMatch = cleanJson.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) {
-    throw new Error("Invalid JSON response from Gemini");
-  }
-
-  const plan = JSON.parse(jsonMatch[0]) as GeneratedPlan;
-  return plan;
 }

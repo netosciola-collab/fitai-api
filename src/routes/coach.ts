@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import genAI from '../lib/openai';
+import axios from 'axios';
 import prisma from '../lib/prisma';
 import { authMiddleware, AuthRequest } from '../middleware/auth';
 
@@ -19,30 +19,31 @@ router.post('/chat', authMiddleware, async (req: AuthRequest, res: Response) => 
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Construir histórico de mensagens
-    const messages: any[] = [
-      {
-        role: 'user',
-        content: `Você é o FitAI Coach, personal trainer digital de ${user.name}.
+    const apiKey = process.env.GEMINI_API_KEY;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+
+    const systemPrompt = `Você é o FitAI Coach, personal trainer digital de ${user.name}.
 Perfil: objetivo=${user.goal}, nível=${user.experienceLevel}, dias=${user.availableDays}x/semana.
 Tom: direto, motivador, técnico quando necessário. Respostas curtas (máx 3 parágrafos).
-Nunca recomendar medicamentos ou dosagens de suplementos.
+Nunca recomendar medicamentos ou dosagens de suplementos.`;
 
-Histórico da conversa:
-${history && Array.isArray(history) ? history.map((m: any) => `${m.role}: ${m.content}`).join('\n') : ''}
+    const historyText = history && Array.isArray(history) 
+      ? history.map((m: any) => `${m.role}: ${m.content}`).join('\n')
+      : '';
 
-Mensagem do usuário: ${message}`,
-      },
-    ];
+    const fullPrompt = `${systemPrompt}
 
-    // Chamar Gemini
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-    const result = await model.generateContent(messages[0].content);
-    const reply = result.response.text();
+${historyText ? `Histórico da conversa:\n${historyText}\n` : ''}Mensagem do usuário: ${message}`;
+
+    const response = await axios.post(url, {
+      contents: [{ parts: [{ text: fullPrompt }] }]
+    });
+
+    const reply = response.data.candidates[0].content.parts[0].text;
 
     res.json({ reply });
   } catch (error: any) {
-    console.error('Coach chat error:', error);
+    console.error('Coach chat error:', error.response?.data || error.message);
     res.status(500).json({ error: error.message || 'Internal server error' });
   }
 });
