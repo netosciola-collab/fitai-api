@@ -20,7 +20,7 @@ router.post('/chat', authMiddleware, async (req: AuthRequest, res: Response) => 
     }
 
     const apiKey = process.env.GEMINI_API_KEY;
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:generateContent?key=${apiKey}`;
 
     const systemPrompt = `Você é o FitAI Coach, personal trainer digital de ${user.name}.
 Perfil: objetivo=${user.goal}, nível=${user.experienceLevel}, dias=${user.availableDays}x/semana.
