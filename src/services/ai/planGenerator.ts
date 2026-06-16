@@ -26,7 +26,7 @@ interface GeneratedPlan {
 
 export async function generateWorkoutPlan(user: User): Promise<GeneratedPlan> {
   const apiKey = process.env.GEMINI_API_KEY;
-  const url = `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
   const prompt = `Você é um personal trainer especialista em prescrição de treino baseada em ciência.
 
